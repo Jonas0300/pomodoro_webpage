@@ -12,6 +12,8 @@ let timeLeft;
 let isWorking = true;
 let isPaused = true;
 let expandedDates = new Set();
+let startTime;
+let endTime;
 
 function updateDisplay() {
   const minutes = Math.floor(timeLeft / 60);
@@ -35,14 +37,19 @@ function initializeTimer() {
 function startTimer() {
   if (isPaused) {
     isPaused = false;
+    startTime = Date.now();
+    endTime = startTime + timeLeft * 1000;
     intervalId = setInterval(() => {
+      updateTimeLeft();
       if (timeLeft > 0) {
-        timeLeft--;
         updateDisplay();
       } else {
+        clearInterval(intervalId);
         cycleCompleted();
         isWorking = !isWorking;
         initializeTimer();
+        startTime = Date.now();
+        endTime = startTime + timeLeft * 1000;
       }
     }, 1000);
     toggleBtn.textContent = "Pause";
@@ -56,6 +63,7 @@ function pauseTimer() {
   if (!isPaused) {
     clearInterval(intervalId);
     isPaused = true;
+    updateTimeLeft();
     toggleBtn.textContent = "Fortsett";
     toggleBtn.classList.remove("pause-state");
   }
@@ -70,6 +78,8 @@ function resetTimer() {
   initializeTimer();
 }
 
+// ...existing code...
+
 function cycleCompleted() {
   const duration =
     (isWorking
@@ -77,8 +87,29 @@ function cycleCompleted() {
       : parseInt(breakTimeInput.value, 10)) * 60;
   const completedAt = Date.now();
   saveCycle(completedAt, duration, isWorking);
+  
+  clearInterval(intervalId); // Ensure the current interval is cleared
+  isWorking = !isWorking; // Toggle the state before initializing the next timer
+  initializeTimer(); // Set the new timeLeft based on the toggled state
+  startTime = Date.now();
+  endTime = startTime + timeLeft * 1000;
+  
+  intervalId = setInterval(() => {
+    updateTimeLeft();
+    if (timeLeft > 0) {
+      updateDisplay();
+    } else {
+      clearInterval(intervalId);
+      cycleCompleted();
+    }
+  }, 1000);
+  
+  toggleBtn.textContent = isWorking ? "Pause" : "Fortsett";
+  toggleBtn.classList.toggle("pause-state", !isWorking);
+  
   displayCycles();
 }
+
 
 function saveCycle(completedAt, duration, isWorking) {
   const cycles = JSON.parse(localStorage.getItem("cycles") || "[]");
@@ -120,7 +151,7 @@ function displayCycles() {
 
   for (const date in cyclesByDate) {
     const dateItem = document.createElement("li");
-    dateItem.classList.add('date-header');
+    dateItem.classList.add("date-header");
     const dateObj = new Date(date);
     const weekday = dateObj.toLocaleDateString(undefined, { weekday: "long" });
     const totalWorkMinutes = cyclesByDate[date].reduce(
@@ -129,16 +160,16 @@ function displayCycles() {
     );
     const dateText = date === today ? "I dag" : `${weekday}, ${date}`;
     dateItem.textContent = `${dateText} - Totalt: ${totalWorkMinutes} min`;
-    
+
     // Restore expanded state if it was previously expanded
     if (previousExpandedDates.has(date)) {
-      dateItem.classList.add('expanded');
+      dateItem.classList.add("expanded");
       expandedDates.add(date);
     }
-    
-    dateItem.addEventListener('click', () => {
-      dateItem.classList.toggle('expanded');
-      if (dateItem.classList.contains('expanded')) {
+
+    dateItem.addEventListener("click", () => {
+      dateItem.classList.toggle("expanded");
+      if (dateItem.classList.contains("expanded")) {
         expandedDates.add(date);
       } else {
         expandedDates.delete(date);
@@ -148,16 +179,20 @@ function displayCycles() {
     const cycleList = document.createElement("ul");
     cyclesByDate[date].forEach((cycle, index) => {
       const cycleItem = document.createElement("li");
-      cycleItem.style.setProperty('--item-index', index); // Add this line
+      cycleItem.style.setProperty("--item-index", index); // Add this line
       const time = new Date(cycle.completedAt).toLocaleTimeString([], {
         hour: "2-digit",
         minute: "2-digit",
       });
       const minutes = Math.floor(cycle.duration / 60);
-      cycleItem.innerHTML = `${time} - ${cycle.task || 'Ukjent oppgave'} (${minutes} min) <button class="delete-cycle-btn" onclick="deleteCycle(${cycle.index})">X</button>`;
+      cycleItem.innerHTML = `${time} - ${
+        cycle.task || "Ukjent oppgave"
+      } (${minutes} min) <button class="delete-cycle-btn" onclick="deleteCycle(${
+        cycle.index
+      })">X</button>`;
       cycleList.appendChild(cycleItem);
     });
-    
+
     historyList.appendChild(dateItem);
     historyList.appendChild(cycleList);
   }
@@ -217,4 +252,8 @@ if ("serviceWorker" in navigator) {
     .catch((error) => {
       console.log("Service Worker registrering mislyktes:", error);
     });
+}
+
+function updateTimeLeft() {
+  timeLeft = Math.ceil((endTime - Date.now()) / 1000);
 }

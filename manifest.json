@@ -2,10 +2,10 @@
   "name": "Pomodoro Timer",
   "short_name": "Pomodoro",
   "description": "A simple Pomodoro timer for productivity",
-  "start_url": "/jonasegl/Pomodoro/",
-  "display": "standalone",
-  "background_color": "#f0f0f0",
-  "theme_color": "#f0f0f0",
+  "start_url": "./",
+  "display": "fullscreen",
+  "background_color": "#f44336",
+  "theme_color": "#f44336",
   "icons": [
     {
       "src": "icon-192x192.png",
