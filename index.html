@@ -16,7 +16,15 @@
   </head>
   <body>
     <div id="timer-container">
-      <div id="status">Arbeidstid</div>
+      <div id="status-container">
+        <input
+          type="text"
+          id="status"
+          placeholder="Arbeidstid"
+          maxlength="50"
+        />
+        <span class="edit-indicator">✎</span>
+      </div>
       <div id="timer">25:00</div>
       <input
         type="number"

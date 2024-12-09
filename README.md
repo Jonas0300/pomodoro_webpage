@@ -11,4 +11,3 @@ A simple Pomodoro timer for productivity. This application helps you manage your
 - Option to delete all stored data.
 - Responsive design.
 - Service Worker for offline functionality.
-# pomodoro_webpage

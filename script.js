@@ -11,6 +11,7 @@ let intervalId = null;
 let timeLeft;
 let isWorking = true;
 let isPaused = true;
+let expandedDates = new Set();
 
 function updateDisplay() {
   const minutes = Math.floor(timeLeft / 60);
@@ -18,7 +19,9 @@ function updateDisplay() {
   timer.textContent = `${minutes.toString().padStart(2, "0")}:${seconds
     .toString()
     .padStart(2, "0")}`;
-  status.textContent = isWorking ? "Arbeidstid" : "Pause";
+  if (!status.value.trim()) {
+    status.value = isWorking ? "Arbeidstid" : "Pause";
+  }
   document.body.style.backgroundColor = isWorking ? "#FF5C5C" : "#ADD8E6";
 }
 
@@ -79,7 +82,8 @@ function cycleCompleted() {
 
 function saveCycle(completedAt, duration, isWorking) {
   const cycles = JSON.parse(localStorage.getItem("cycles") || "[]");
-  cycles.push({ completedAt, duration, isWorking });
+  const task = status.value.trim() || "Arbeidstid"; // Default if no task specified
+  cycles.push({ completedAt, duration, isWorking, task });
   localStorage.setItem("cycles", JSON.stringify(cycles));
 }
 
@@ -93,12 +97,14 @@ function deleteCycle(index) {
 function displayCycles() {
   const cycles = JSON.parse(localStorage.getItem("cycles") || "[]");
   const historyList = document.getElementById("history-list");
+  const previousExpandedDates = new Set(expandedDates); // Store current state
   historyList.innerHTML = "";
 
   if (cycles.length === 0) {
     const noCyclesMessage = document.createElement("li");
     noCyclesMessage.textContent = "Ingen sykluser fullført ennå.";
     historyList.appendChild(noCyclesMessage);
+    expandedDates.clear();
     return;
   }
 
@@ -114,6 +120,7 @@ function displayCycles() {
 
   for (const date in cyclesByDate) {
     const dateItem = document.createElement("li");
+    dateItem.classList.add('date-header');
     const dateObj = new Date(date);
     const weekday = dateObj.toLocaleDateString(undefined, { weekday: "long" });
     const totalWorkMinutes = cyclesByDate[date].reduce(
@@ -122,21 +129,37 @@ function displayCycles() {
     );
     const dateText = date === today ? "I dag" : `${weekday}, ${date}`;
     dateItem.textContent = `${dateText} - Totalt: ${totalWorkMinutes} min`;
+    
+    // Restore expanded state if it was previously expanded
+    if (previousExpandedDates.has(date)) {
+      dateItem.classList.add('expanded');
+      expandedDates.add(date);
+    }
+    
+    dateItem.addEventListener('click', () => {
+      dateItem.classList.toggle('expanded');
+      if (dateItem.classList.contains('expanded')) {
+        expandedDates.add(date);
+      } else {
+        expandedDates.delete(date);
+      }
+    });
 
     const cycleList = document.createElement("ul");
-    cyclesByDate[date].forEach((cycle) => {
+    cyclesByDate[date].forEach((cycle, index) => {
       const cycleItem = document.createElement("li");
+      cycleItem.style.setProperty('--item-index', index); // Add this line
       const time = new Date(cycle.completedAt).toLocaleTimeString([], {
         hour: "2-digit",
         minute: "2-digit",
       });
       const minutes = Math.floor(cycle.duration / 60);
-      cycleItem.innerHTML = `${time} - Arbeid (${minutes} min) <button class="delete-cycle-btn" onclick="deleteCycle(${cycle.index})">X</button>`;
+      cycleItem.innerHTML = `${time} - ${cycle.task || 'Ukjent oppgave'} (${minutes} min) <button class="delete-cycle-btn" onclick="deleteCycle(${cycle.index})">X</button>`;
       cycleList.appendChild(cycleItem);
     });
-    dateItem.appendChild(cycleList);
-
+    
     historyList.appendChild(dateItem);
+    historyList.appendChild(cycleList);
   }
 }
 

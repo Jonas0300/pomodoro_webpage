@@ -33,16 +33,22 @@ input {
   color: #333;
   text-align: center;
 }
+#taskInput {
+  width: calc(100% - 3rem); /* Full width minus margins */
+  margin-bottom: 1rem;
+  font-style: italic;
+  display: inline-block; /* Add this to keep it inline with other inputs */
+}
 button {
   margin: 0.5rem;
-  padding: 0.4rem 1.5rem; /* Reduce padding to make buttons less high */
+  padding: 0.8rem 2rem; /* Increased padding */
   border: none;
   border-radius: 10px;
   font-size: 1rem;
   font-family: "Fredoka One", cursive;
   cursor: pointer;
   transition: transform 0.1s, box-shadow 0.1s;
-  width: 150px; /* Set a constant width for buttons */
+  min-width: 150px; /* Changed from width to min-width */
 }
 button:hover {
   transform: translateY(-2px);
@@ -68,6 +74,45 @@ button:active {
   font-size: 1.5rem;
   margin-bottom: 1rem;
   color: #333;
+  width: calc(100% - 3rem);
+  text-align: center;
+  background: transparent;
+  border: none;
+  padding: 0.5rem;
+  position: relative;
+  cursor: pointer;
+}
+
+#status-container {
+  position: relative;
+  display: inline-block;
+}
+
+.edit-indicator {
+  position: absolute;
+  right: 1rem;
+  top: 40%;
+  transform: translateY(-50%);
+  color: #666;
+  opacity: 0;
+  transition: opacity 0.2s;
+  pointer-events: none;
+  font-size: 1.6rem; /* Make the pencil icon bigger */
+}
+
+#status-container:hover .edit-indicator {
+  opacity: 1;
+}
+
+#status:focus {
+  outline: none;
+  background-color: rgba(0, 0, 0, 0.05);
+  border-radius: 10px;
+}
+
+#status::placeholder {
+  color: #333;
+  opacity: 1;
 }
 #history-container {
   margin-top: 2rem;
@@ -88,9 +133,31 @@ button:active {
   font-size: 1rem;
   color: #333;
 }
+#history-list li.date-header {
+  cursor: pointer;
+  user-select: none;
+  padding: 8px 0;
+}
+#history-list li.date-header::before {
+  content: "▶";
+  display: inline-block;
+  margin-right: 8px;
+  transform: rotate(0);
+  transition: transform 0.3s ease;
+}
+#history-list li.date-header.expanded::before {
+  transform: rotate(90deg);
+}
 #history-list ul {
   list-style-type: none;
   padding-left: 1rem;
+  max-height: 0;
+  overflow: hidden;
+  transition: max-height 0.4s cubic-bezier(0, 1, 0, 1);
+}
+#history-list li.expanded + ul {
+  max-height: 1000px; /* Larger value to accommodate more content */
+  transition: max-height 0.6s cubic-bezier(0.9, 0, 0.8, 0.2);
 }
 #history-list ul li {
   margin: 0; /* Remove all margins for nested list items */
@@ -99,6 +166,14 @@ button:active {
   display: flex;
   justify-content: space-between;
   align-items: center;
+  opacity: 0;
+  transform: translateY(-10px);
+  transition: opacity 0.3s ease, transform 0.3s ease;
+}
+#history-list li.expanded + ul li {
+  opacity: 1;
+  transform: translateY(0);
+  transition-delay: calc(0.2s + (var(--item-index, 0) * 0.05s));
 }
 .delete-data-btn {
   position: fixed;
@@ -125,12 +200,13 @@ button:active {
 .delete-cycle-btn {
   background-color: transparent;
   border: none;
-  color: #f44336;
+  color: #fb8282;
   font-size: 1rem;
   cursor: pointer;
-}
-.delete-cycle-btn:hover {
-  color: #d32f2f;
+  padding: 0; /* Remove padding */
+  min-width: 0; /* Override the min-width from button */
+  width: auto; /* Let the width be determined by content */
+  margin: 0 0 0 10px; /* Add margin only on the left side */
 }
 .hidden {
   opacity: 0;
