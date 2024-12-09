@@ -1,0 +1,137 @@
+body {
+  font-family: "Fredoka One", cursive;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+  margin: 0;
+  transition: background-color 0.5s;
+  background-color: #f0f0f0;
+}
+#timer-container {
+  text-align: center;
+  transition: opacity 0.5s;
+  background-color: white;
+  padding: 2rem;
+  border-radius: 20px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+}
+#timer {
+  font-size: 8rem;
+  margin-bottom: 1rem;
+  color: #333;
+  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.1);
+}
+input {
+  margin: 0.5rem;
+  padding: 0.8rem;
+  border: none;
+  border-radius: 10px;
+  font-size: 1rem;
+  font-family: "Fredoka One", cursive;
+  background-color: #f0f0f0;
+  color: #333;
+  text-align: center;
+}
+button {
+  margin: 0.5rem;
+  padding: 0.4rem 1.5rem; /* Reduce padding to make buttons less high */
+  border: none;
+  border-radius: 10px;
+  font-size: 1rem;
+  font-family: "Fredoka One", cursive;
+  cursor: pointer;
+  transition: transform 0.1s, box-shadow 0.1s;
+  width: 150px; /* Set a constant width for buttons */
+}
+button:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+button:active {
+  transform: translateY(0);
+  box-shadow: none;
+}
+#toggleBtn {
+  background-color: #4caf50;
+  color: white;
+}
+#toggleBtn.pause-state {
+  background-color: #ffc107;
+  color: #333;
+}
+#resetBtn {
+  background-color: #f44336;
+  color: white;
+}
+#status {
+  font-size: 1.5rem;
+  margin-bottom: 1rem;
+  color: #333;
+}
+#history-container {
+  margin-top: 2rem;
+  text-align: left;
+  width: 100%;
+  max-width: 600px;
+}
+#history-container h2 {
+  font-size: 1.5rem;
+  color: #333;
+}
+#history-list {
+  list-style-type: none;
+  padding: 0;
+}
+#history-list li {
+  margin: 0; /* Remove all margins */
+  font-size: 1rem;
+  color: #333;
+}
+#history-list ul {
+  list-style-type: none;
+  padding-left: 1rem;
+}
+#history-list ul li {
+  margin: 0; /* Remove all margins for nested list items */
+  font-size: 0.9rem;
+  color: #666;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.delete-data-btn {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  background-color: #f44336;
+  color: white;
+  padding: 0.8rem 1.5rem;
+  border: none;
+  border-radius: 10px;
+  font-size: 1rem;
+  font-family: "Fredoka One", cursive;
+  cursor: pointer;
+  transition: transform 0.1s, box-shadow 0.1s;
+}
+.delete-data-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+.delete-data-btn:active {
+  transform: translateY(0);
+  box-shadow: none;
+}
+.delete-cycle-btn {
+  background-color: transparent;
+  border: none;
+  color: #f44336;
+  font-size: 1rem;
+  cursor: pointer;
+}
+.delete-cycle-btn:hover {
+  color: #d32f2f;
+}
+.hidden {
+  opacity: 0;
+}

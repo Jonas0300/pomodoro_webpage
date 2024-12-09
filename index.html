@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="no">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Pomodoro Timer</title>
+    <link
+      href="https://fonts.googleapis.com/css2?family=Fredoka+One&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="manifest" href="manifest.json" />
+    <link rel="icon" type="image/png" sizes="192x192" href="icon-192x192.png" />
+    <link rel="apple-touch-icon" href="icon-192x192.png" />
+    <meta name="theme-color" content="#f0f0f0" />
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <div id="timer-container">
+      <div id="status">Arbeidstid</div>
+      <div id="timer">25:00</div>
+      <input
+        type="number"
+        id="workTime"
+        placeholder="Arbeidstid (minutter)"
+        value="25"
+      />
+      <input
+        type="number"
+        id="breakTime"
+        placeholder="Pause (minutter)"
+        value="5"
+      />
+      <br />
+      <button id="toggleBtn">Start</button>
+      <button id="resetBtn">Tilbakestill</button>
+
+      <div id="history-container">
+        <h2>Fullførte Sykluser</h2>
+        <ul id="history-list"></ul>
+      </div>
+    </div>
+    <button id="deleteDataBtn" class="delete-data-btn">Slett Data</button>
+    <script src="script.js"></script>
+  </body>
+</html>
