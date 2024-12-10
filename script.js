@@ -239,7 +239,6 @@ deleteDataBtn.addEventListener("click", () => {
 
 updateDisplay();
 
-// Add this at the end of the script
 if ("serviceWorker" in navigator) {
   navigator.serviceWorker
     .register("service-worker.js")
