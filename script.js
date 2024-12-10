@@ -78,8 +78,6 @@ function resetTimer() {
   initializeTimer();
 }
 
-// ...existing code...
-
 function cycleCompleted() {
   const duration =
     (isWorking
@@ -87,13 +85,13 @@ function cycleCompleted() {
       : parseInt(breakTimeInput.value, 10)) * 60;
   const completedAt = Date.now();
   saveCycle(completedAt, duration, isWorking);
-  
+
   clearInterval(intervalId); // Ensure the current interval is cleared
   isWorking = !isWorking; // Toggle the state before initializing the next timer
   initializeTimer(); // Set the new timeLeft based on the toggled state
   startTime = Date.now();
   endTime = startTime + timeLeft * 1000;
-  
+
   intervalId = setInterval(() => {
     updateTimeLeft();
     if (timeLeft > 0) {
@@ -103,13 +101,12 @@ function cycleCompleted() {
       cycleCompleted();
     }
   }, 1000);
-  
+
   toggleBtn.textContent = isWorking ? "Pause" : "Fortsett";
   toggleBtn.classList.toggle("pause-state", !isWorking);
-  
+
   displayCycles();
 }
-
 
 function saveCycle(completedAt, duration, isWorking) {
   const cycles = JSON.parse(localStorage.getItem("cycles") || "[]");
