@@ -46,7 +46,6 @@ function startTimer() {
       } else {
         clearInterval(intervalId);
         cycleCompleted();
-        isWorking = !isWorking;
         initializeTimer();
         startTime = Date.now();
         endTime = startTime + timeLeft * 1000;
@@ -115,68 +114,82 @@ function saveCycle(completedAt, duration, isWorking) {
   localStorage.setItem("cycles", JSON.stringify(cycles));
 }
 
-function deleteCycle(index) {
+function deleteCycle(completedAt) {
   const cycles = JSON.parse(localStorage.getItem("cycles") || "[]");
-  cycles.splice(index, 1);
-  localStorage.setItem("cycles", JSON.stringify(cycles));
+  const updatedCycles = cycles.filter(
+    (cycle) => cycle.completedAt !== completedAt
+  );
+  localStorage.setItem("cycles", JSON.stringify(updatedCycles));
   displayCycles();
 }
 
 function displayCycles() {
   const cycles = JSON.parse(localStorage.getItem("cycles") || "[]");
   const historyList = document.getElementById("history-list");
-  const previousExpandedDates = new Set(expandedDates); // Store current state
+  const previousExpandedDates = new Set(expandedDates);
   historyList.innerHTML = "";
+  expandedDates.clear();
 
   if (cycles.length === 0) {
     const noCyclesMessage = document.createElement("li");
     noCyclesMessage.textContent = "Ingen sykluser fullført ennå.";
     historyList.appendChild(noCyclesMessage);
-    expandedDates.clear();
     return;
   }
 
-  const today = new Date().toLocaleDateString();
-  const cyclesByDate = {};
-  cycles.forEach((cycle, index) => {
+  // Sort cycles with newest first
+  cycles.sort((a, b) => b.completedAt - a.completedAt);
+
+  const todayString = new Date().toLocaleDateString();
+  const todayCycles = [];
+  const olderCycles = {};
+
+  cycles.forEach((cycle) => {
     if (cycle.isWorking) {
-      const date = new Date(cycle.completedAt).toLocaleDateString();
-      if (!cyclesByDate[date]) cyclesByDate[date] = [];
-      cyclesByDate[date].push({ ...cycle, index });
+      const cycleDate = new Date(cycle.completedAt);
+      const dateString = cycleDate.toLocaleDateString();
+
+      if (dateString === todayString) {
+        todayCycles.push(cycle);
+      } else {
+        if (!olderCycles[dateString]) olderCycles[dateString] = [];
+        olderCycles[dateString].push(cycle);
+      }
     }
   });
 
-  for (const date in cyclesByDate) {
-    const dateItem = document.createElement("li");
-    dateItem.classList.add("date-header");
-    const dateObj = new Date(date);
-    const weekday = dateObj.toLocaleDateString(undefined, { weekday: "long" });
-    const totalWorkMinutes = cyclesByDate[date].reduce(
-      (total, cycle) => total + Math.floor(cycle.duration / 60),
-      0
-    );
-    const dateText = date === today ? "I dag" : `${weekday}, ${date}`;
-    dateItem.textContent = `${dateText} - Totalt: ${totalWorkMinutes} min`;
+  // Calculate total work minutes for today
+  const totalWorkMinutesToday = todayCycles.reduce(
+    (total, cycle) => total + Math.floor(cycle.duration / 60),
+    0
+  );
 
+  // Display 'I dag' cycles
+  if (todayCycles.length > 0) {
+    const todayItem = document.createElement("li");
+    todayItem.classList.add("date-header");
     // Restore expanded state if it was previously expanded
-    if (previousExpandedDates.has(date)) {
-      dateItem.classList.add("expanded");
-      expandedDates.add(date);
+    if (previousExpandedDates.has("today")) {
+      todayItem.classList.add("expanded");
+      expandedDates.add("today");
     }
 
-    dateItem.addEventListener("click", () => {
-      dateItem.classList.toggle("expanded");
-      if (dateItem.classList.contains("expanded")) {
-        expandedDates.add(date);
+    todayItem.textContent = `I dag - Totalt: ${totalWorkMinutesToday} min`;
+
+    todayItem.addEventListener("click", () => {
+      todayItem.classList.toggle("expanded");
+      if (todayItem.classList.contains("expanded")) {
+        expandedDates.add("today");
       } else {
-        expandedDates.delete(date);
+        expandedDates.delete("today");
       }
     });
 
-    const cycleList = document.createElement("ul");
-    cyclesByDate[date].forEach((cycle, index) => {
+    const todayList = document.createElement("ul");
+
+    todayCycles.forEach((cycle, index) => {
       const cycleItem = document.createElement("li");
-      cycleItem.style.setProperty("--item-index", index); // Add this line
+      cycleItem.style.setProperty("--item-index", index);
       const time = new Date(cycle.completedAt).toLocaleTimeString([], {
         hour: "2-digit",
         minute: "2-digit",
@@ -184,14 +197,106 @@ function displayCycles() {
       const minutes = Math.floor(cycle.duration / 60);
       cycleItem.innerHTML = `${time} - ${
         cycle.task || "Ukjent oppgave"
-      } (${minutes} min) <button class="delete-cycle-btn" onclick="deleteCycle(${
-        cycle.index
-      })">X</button>`;
-      cycleList.appendChild(cycleItem);
+      } (${minutes} min)
+        <button class="delete-cycle-btn" onclick="deleteCycle(${
+          cycle.completedAt
+        })">X</button>`;
+      todayList.appendChild(cycleItem);
     });
 
-    historyList.appendChild(dateItem);
-    historyList.appendChild(cycleList);
+    historyList.appendChild(todayItem);
+    historyList.appendChild(todayList);
+  }
+
+  // Display 'Tidligere' cycles in a collapsible section
+  if (Object.keys(olderCycles).length > 0) {
+    const olderItem = document.createElement("li");
+    olderItem.classList.add("date-header");
+    olderItem.textContent = "Tidligere";
+
+    // Restore expanded state if it was previously expanded
+    if (previousExpandedDates.has("Older")) {
+      olderItem.classList.add("expanded");
+      expandedDates.add("Older");
+    }
+
+    olderItem.addEventListener("click", () => {
+      olderItem.classList.toggle("expanded");
+      if (olderItem.classList.contains("expanded")) {
+        expandedDates.add("Older");
+      } else {
+        expandedDates.delete("Older");
+      }
+    });
+
+    const olderListContainer = document.createElement("div");
+    olderListContainer.classList.add("older-list-container");
+
+    // Get dates sorted, newest first
+    const dates = Object.keys(olderCycles).sort((a, b) => {
+      const dateA = new Date(a);
+      const dateB = new Date(b);
+      return dateB - dateA;
+    });
+
+    dates.forEach((date) => {
+      // Calculate total work minutes for the date
+      const totalWorkMinutes = olderCycles[date].reduce(
+        (total, cycle) => total + Math.floor(cycle.duration / 60),
+        0
+      );
+
+      const dateObj = new Date(date);
+      const weekday = dateObj.toLocaleDateString(undefined, {
+        weekday: "long",
+      });
+      const dateText = `${weekday}, ${date} - Totalt: ${totalWorkMinutes} min`;
+
+      const dateItem = document.createElement("li");
+      dateItem.classList.add("date-header");
+
+      // Restore expanded state if it was previously expanded
+      if (previousExpandedDates.has(date)) {
+        dateItem.classList.add("expanded");
+        expandedDates.add(date);
+      }
+
+      dateItem.textContent = dateText;
+
+      dateItem.addEventListener("click", () => {
+        dateItem.classList.toggle("expanded");
+        if (dateItem.classList.contains("expanded")) {
+          expandedDates.add(date);
+        } else {
+          expandedDates.delete(date);
+        }
+      });
+
+      const cycleList = document.createElement("ul");
+
+      olderCycles[date].forEach((cycle, index) => {
+        const cycleItem = document.createElement("li");
+        cycleItem.style.setProperty("--item-index", index);
+        const time = new Date(cycle.completedAt).toLocaleTimeString([], {
+          hour: "2-digit",
+          minute: "2-digit",
+        });
+        const minutes = Math.floor(cycle.duration / 60);
+        cycleItem.innerHTML = `${time} - ${
+          cycle.task || "Ukjent oppgave"
+        } (${minutes} min)
+          <button class="delete-cycle-btn" onclick="deleteCycle(${
+            cycle.completedAt
+          })">X</button>`;
+        cycleList.appendChild(cycleItem);
+      });
+
+      olderListContainer.appendChild(dateItem);
+      olderListContainer.appendChild(cycleList);
+    });
+
+    historyList.appendChild(olderItem);
+    historyList.appendChild(olderListContainer);
   }
 }
 
