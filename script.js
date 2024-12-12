@@ -140,14 +140,14 @@ function displayCycles() {
   // Sort cycles with newest first
   cycles.sort((a, b) => b.completedAt - a.completedAt);
 
-  const todayString = new Date().toLocaleDateString();
+  const todayString = new Date().toISOString().split('T')[0]; // Use ISO format for today's date
   const todayCycles = [];
   const olderCycles = {};
 
   cycles.forEach((cycle) => {
     if (cycle.isWorking) {
       const cycleDate = new Date(cycle.completedAt);
-      const dateString = cycleDate.toLocaleDateString();
+      const dateString = cycleDate.toISOString().split('T')[0]; // Use ISO format for cycle dates
 
       if (dateString === todayString) {
         todayCycles.push(cycle);
@@ -246,11 +246,11 @@ function displayCycles() {
         0
       );
 
-      const dateObj = new Date(date);
+      const dateObj = new Date(date); // Create Date object from ISO date string
       const weekday = dateObj.toLocaleDateString(undefined, {
         weekday: "long",
       });
-      const dateText = `${weekday}, ${date} - Totalt: ${totalWorkMinutes} min`;
+      const dateText = `${weekday}, ${dateObj.toLocaleDateString()} - Totalt: ${totalWorkMinutes} min`;
 
       const dateItem = document.createElement("li");
       dateItem.classList.add("date-header");
