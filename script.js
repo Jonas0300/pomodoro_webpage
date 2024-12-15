@@ -6,6 +6,10 @@ const toggleBtn = document.getElementById("toggleBtn");
 const resetBtn = document.getElementById("resetBtn");
 const timerContainer = document.getElementById("timer-container");
 const deleteDataBtn = document.getElementById("deleteDataBtn");
+const volumeControl = document.getElementById("volume-control");
+const volumeSlider = document.getElementById("volumeSlider");
+const muteBtn = document.getElementById("muteBtn");
+let isMuted = false;
 
 let intervalId = null;
 let timeLeft;
@@ -14,6 +18,8 @@ let isPaused = true;
 let expandedDates = new Set();
 let startTime;
 let endTime;
+const ringSound = new Audio("ring.mp3");
+ringSound.volume = 1; // Set initial volume to max
 
 function updateDisplay() {
   const minutes = Math.floor(timeLeft / 60);
@@ -104,6 +110,19 @@ function cycleCompleted() {
   toggleBtn.textContent = isWorking ? "Pause" : "Fortsett";
   toggleBtn.classList.toggle("pause-state", !isWorking);
 
+  // Send notification when timer completes
+  if (Notification.permission === "granted") {
+    new Notification("Timer ferdig!", {
+      body: isWorking ? "Det er tid for en pause!" : "Tilbake til arbeid!",
+    });
+  }
+
+  // Play sound when timer switches
+  if (!isMuted) {
+    ringSound.volume = volumeSlider.value;
+    ringSound.play();
+  }
+
   displayCycles();
 }
 
@@ -140,14 +159,14 @@ function displayCycles() {
   // Sort cycles with newest first
   cycles.sort((a, b) => b.completedAt - a.completedAt);
 
-  const todayString = new Date().toISOString().split('T')[0]; // Use ISO format for today's date
+  const todayString = new Date().toISOString().split("T")[0]; // Use ISO format for today's date
   const todayCycles = [];
   const olderCycles = {};
 
   cycles.forEach((cycle) => {
     if (cycle.isWorking) {
       const cycleDate = new Date(cycle.completedAt);
-      const dateString = cycleDate.toISOString().split('T')[0]; // Use ISO format for cycle dates
+      const dateString = cycleDate.toISOString().split("T")[0]; // Use ISO format for cycle dates
 
       if (dateString === todayString) {
         todayCycles.push(cycle);
@@ -304,6 +323,11 @@ function displayCycles() {
 document.addEventListener("DOMContentLoaded", () => {
   displayCycles();
   initializeTimer();
+
+  // Request notification permission
+  if (Notification.permission !== "granted") {
+    Notification.requestPermission();
+  }
 });
 
 toggleBtn.addEventListener("click", startTimer);
@@ -328,10 +352,12 @@ document.addEventListener("mousemove", () => {
   if (!intervalId) return;
   timerContainer.classList.remove("hidden");
   deleteDataBtn.classList.remove("hidden");
+  volumeControl.classList.remove("hidden");
   clearTimeout(hideTimeout);
   hideTimeout = setTimeout(() => {
     timerContainer.classList.add("hidden");
     deleteDataBtn.classList.add("hidden");
+    volumeControl.classList.add("hidden");
   }, 3000);
 });
 
@@ -340,6 +366,16 @@ deleteDataBtn.addEventListener("click", () => {
     localStorage.removeItem("cycles");
     displayCycles();
   }
+});
+
+muteBtn.addEventListener("click", () => {
+  isMuted = !isMuted;
+  ringSound.muted = isMuted;
+  muteBtn.textContent = isMuted ? "🔇" : "🔊";
+});
+
+volumeSlider.addEventListener("input", () => {
+  ringSound.volume = volumeSlider.value;
 });
 
 updateDisplay();

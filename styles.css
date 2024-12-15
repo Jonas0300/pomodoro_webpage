@@ -220,6 +220,7 @@ button:active {
   font-family: "Fredoka One", cursive;
   cursor: pointer;
   transition: transform 0.1s, box-shadow 0.1s;
+  width: calc(100px + 3rem); /* Volume slider width + padding */
 }
 .delete-data-btn:hover {
   transform: translateY(-2px);
@@ -242,4 +243,70 @@ button:active {
 }
 .hidden {
   opacity: 0;
+  transition: opacity 0.5s;
+}
+
+#muteBtn {
+  background-color: transparent;
+  border: none;
+  font-size: 1.5rem;
+  cursor: pointer;
+  margin-left: 0.5rem;
+  padding: 0; /* Remove padding */
+  margin: 0; /* Remove margin */
+  width: 40px; /* Set width to fit the icon */
+  height: 40px; /* Set height to make it square */
+  min-width: unset; /* Override min-width from button */
+  flex-shrink: 0;
+  z-index: 2; /* Ensure button stays on top */
+}
+
+#volume-control {
+  position: fixed;
+  bottom: 80px; /* Position above the delete button */
+  right: 20px;
+  display: flex;
+  align-items: center;
+  background: white;
+  border-radius: 20px;
+  padding: 0.5rem;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  width: 40px; /* Initial width to fit just the button */
+  transition: width 0.3s ease; /* Smooth width transition */
+  overflow: visible; /* Change from hidden to visible */
+}
+
+#volume-control:hover {
+  width: 160px; /* Expanded width to fit button + slider */
+}
+
+#volume-control input[type="range"] {
+  display: block; /* Override previous display: none */
+  width: 100px;
+  margin-left: 0.5rem;
+}
+
+#volume-control:hover input[type="range"] {
+  display: inline-block; /* Show the slider on hover */
+}
+
+#volume-control label {
+  margin-right: 0.5rem;
+}
+
+#volumeSlider {
+  position: absolute; /* Position the slider absolutely */
+  left: 35px; /* Position it after the button */
+  width: 100px;
+  opacity: 0;
+  transition: opacity 0.3s ease; /* Smooth fade in/out */
+  padding: 0 10px; /* Add padding for better edge access */
+}
+
+#volume-control:hover #volumeSlider {
+  opacity: 1;
+}
+
+#muteCheckbox {
+  margin-right: 0.25rem;
 }

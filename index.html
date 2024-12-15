@@ -41,11 +41,27 @@
       <br />
       <button id="toggleBtn">Start</button>
       <button id="resetBtn">Tilbakestill</button>
+      <!-- Remove the mute button from here -->
+      <!--
+      <button id="muteBtn">🔊</button>
+      -->
 
       <div id="history-container">
         <h2>Fullførte Sykluser</h2>
         <ul id="history-list"></ul>
       </div>
+    </div>
+    <!-- Add the volume control above the "Slett Data" button -->
+    <div id="volume-control">
+      <button id="muteBtn">🔊</button>
+      <input
+        type="range"
+        id="volumeSlider"
+        min="0"
+        max="1"
+        step="0.01"
+        value="1"
+      />
     </div>
     <button id="deleteDataBtn" class="delete-data-btn">Slett Data</button>
     <script src="script.js"></script>
